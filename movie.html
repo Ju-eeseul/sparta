@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .title {
+            height: 100px;
+            width: fit-content;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        body {
+            background-color: black;
+        }
+
+        .container {
+            background-color: gray;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group {
+            padding-top: 10px;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            load();
+            document.getElementById("searchBtn").addEventListener("click", search);
+        });
+        const apiKey = '69b9d4f36622b801dbd7a1a9016ecf32';
+        const topRatedUrl = `https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&language=en-US&page=1`;
+
+        async function load() {
+            try {
+                const response = await fetch(topRatedUrl);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    const movieListDiv = document.getElementById('movieList');
+                    movieListDiv.innerHTML = '';
+
+                    data.results.forEach(movie => {
+                        const movieTitle = movie.title;
+                        const movieId = movie.id;
+                        const movieElement = create(movieTitle, movie.overview, movie.poster_path, movie.vote_average, movieId);
+                        movieListDiv.appendChild(movieElement);
+                    });
+                } else {
+                    alert('최고 평점 영화가 없습니다.');
+                }
+            } catch (error) {
+                console.error('데이터를 가져오는 중 오류가 발생했습니다:', error);
+                alert('데이터를 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+            }
+        }
+
+        function showAlert(movieId) {
+            alert(`선택한 영화 ID: ${movieId}`);
+        }
+
+        function create(title, overview, posterPath, voteAverage, id) {
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('col-md-3', 'g-4');
+
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.style.backgroundColor = 'gray';
+            card.style.color = 'white';
+            card.style.width = '400px';
+            card.style.height = '900px';
+            card.style.margin = '30px auto 0px auto';
+            card.style.border = '1px solid white';
+            card.style.padding = '20px';
+            card.style.borderRadius = '10px';
+            card.style.cursor = 'pointer';
+
+            const cardImage = document.createElement('img');
+            cardImage.src = `https://image.tmdb.org/t/p/w500${posterPath}`;
+            cardImage.classList.add('card-img-top');
+            card.appendChild(cardImage);
+
+            const cardBody = document.createElement('div');
+            cardBody.classList.add('card-body');
+
+            const cardTitle = document.createElement('h5');
+            cardTitle.classList.add('card-title');
+            cardTitle.textContent = title;
+            cardTitle.style.fontWeight = 'bold';
+            cardBody.appendChild(cardTitle);
+
+            const cardOverview = document.createElement('p');
+            cardOverview.classList.add('card-text');
+            cardOverview.textContent = overview;
+            cardBody.appendChild(cardOverview);
+
+            const cardVoteAverage = document.createElement('p');
+            cardVoteAverage.classList.add('card-text');
+            cardVoteAverage.textContent = `평점: ${voteAverage}`;
+            cardBody.appendChild(cardVoteAverage);
+
+            card.appendChild(cardBody);
+            cardDiv.appendChild(card);
+
+            card.addEventListener('click', () => showAlert(id));
+
+            return cardDiv;
+        }
+        function refreshPage() {
+            location.reload();
+        }
+    </script>
+</head>
+
+<body>
+
+    <div onclick="refreshPage()">
+        <h1 class="title">Movies</h1>
+    </div>
+
+
+    <div class="container">
+        <div class="d-flex justify-content-center">
+            <div class="input-group mb-3">
+                <input type="search" class="form-control form-control-dark text-bg-dark" id="searchInput"
+                    placeholder="영화 제목을 검색해 보세요" aria-label="Search">
+                <button class="btn btn-outline-light" type="button" id="searchBtn">검색</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="movieList"></div>
+    </div>
+    <script>
+        async function search() {
+            const searchQuery = document.getElementById('searchInput').value.trim().toUpperCase();
+            const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&page=1&query=${searchQuery}`;
+            try {
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    clearPreviousResults();
+                    displayMovies(data.results);
+                } else {
+                    alert('검색 결과가 없습니다.');
+                }
+            } catch (error) {
+                console.error('오류가 발생했습니다:', error);
+                alert('오류가 발생했습니다. 나중에 다시 시도해주세요.');
+            }
+        }
+        function clearPreviousResults() {
+            const movieListDiv = document.getElementById('movieList');
+            movieListDiv.innerHTML = '';
+        }
+
+
+    </script>
+</body>
+
+</html>
